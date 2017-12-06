@@ -13,8 +13,10 @@ Player::Player() :Spaceship()
     //Ajout de l'arme basique du joueur
     weapons.push_back(WeaponGenerator::GetWeapon(Weapon::WeaponType::BASIC_WEAPON));
     curWepIndex = 0;
+    //Autres variables
     curScorMult = 1;
     score = 0;
+    this->isPlayer = true;
 }
 
 Player::~Player()
@@ -41,7 +43,7 @@ void spaceShooter::Player::KillInstance()
 
 void spaceShooter::Player::SetLimits(const Vector2f point1, const Vector2f point2)
 {
-    limitMin = Vector2f(point1.x + sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point1.y - sprite->getTexture()->getSize().y/16 /*/ (2 * (sprite->getScale().y))*/);
+    limitMin = Vector2f(point1.x + sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point1.y - sprite->getTexture()->getSize().y / 16 /*/ (2 * (sprite->getScale().y))*/);
     limitMax = Vector2f(point2.x - sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point2.y - sprite->getTexture()->getSize().y / (14 * (sprite->getScale().y)));
 }
 
@@ -143,5 +145,5 @@ void spaceShooter::Player::AdjustVisual()
 {
     sprite->setTexture(texture);
     sprite->setScale(0.4f, 0.4f);
-    sprite->setOrigin(texture.getSize().x/2, texture.getSize().y/2);
+    sprite->setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
 }
