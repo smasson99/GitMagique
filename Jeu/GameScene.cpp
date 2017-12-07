@@ -4,10 +4,7 @@
 #include "GlobalMath.h"
 //Debug
 #include <iostream>
-using namespace std;
 //
-
-using namespace spaceShooter;
 
 GameScene::GameScene()
 {
@@ -18,25 +15,26 @@ GameScene::GameScene()
 GameScene::~GameScene()
 {
     //Clean-up
+    //temp
     //Clear des vecteurs
     for (Projectile* curProj : basicProjectiles)
         delete curProj;
     for (Bonus* curBonus : scoresBonus)
         delete curBonus;
-	for (Bombe* curBomb : bombs)
-		delete curBomb;
-	for (BombProj* curBombProj : explosion)
-		delete curBombProj;
-
+    for (BasicEnemy* curEnem : basicEnemys)
+        delete curEnem;
     basicProjectiles.clear();
     scoresBonus.clear();
-	bombs.clear();
-	explosion.clear();
+    basicEnemys.clear();
+    //
     //Destruction du joueur
     player->KillInstance();
     //Clean-up statiques
     Bonus::CleanUp();
     Enemy::CleanUp();
+    Spaceship::CleanUp();
+    Projectile::CleanUp();
+    BasicEnemy::CleanUp();
     //Clean up adresses
     player = nullptr;
 }
@@ -56,14 +54,9 @@ Scene::scenes GameScene::run()
 
 bool GameScene::init(RenderWindow * const window)
 {
- //   enem.SetPosition(500, -10);
- //   enem.Init("");
- //   enem2.SetPosition(400, -10);
- //   enem2.Init("");
- //   enem3.SetPosition(600, -10);
- //   enem3.Init("");
-	//enem4.Init("Ressources\\Textures\\Actors\\Ship.png");
-	//enem4.SetPosition(800, -10);
+    enem.SetPosition(500, 10);
+    enem2.SetPosition(400, 10);
+    enem3.SetPosition(600, 10);
     if (!background.Init(*window))
     {
         return false;
@@ -76,6 +69,11 @@ bool GameScene::init(RenderWindow * const window)
     //Init du font:
     if (!font.loadFromFile("Ressources\\Fonts\\STJEDISE.ttf"))
         return false;
+    //</smasson>
+
+    //<smasson>
+    //Initialisation des variables par défaut
+    ResetEnemysTimer();
     //</smasson>
 
 #pragma region:textureLoad
@@ -143,14 +141,6 @@ bool GameScene::init(RenderWindow * const window)
     {
         basicProjectiles.push_back(ProjectileGenerator::GetProjectile(Projectile::ProjectileType::BASIC));
     }
-	for (size_t i = 0; i < nbProjExplosion; i++)
-	{
-		explosion.push_back((BombProj*)ProjectileGenerator::GetProjectile(Projectile::ProjectileType::BOMB_PROJ));
-	}
-	for (size_t i = 0; i < nbBombsStart; i++)
-	{
-		bombs.push_back((Bombe*)ProjectileGenerator::GetProjectile(Projectile::ProjectileType::BOMB));
-	}
 #pragma endregion
 
     //Initialisation des bonus
@@ -165,17 +155,82 @@ bool GameScene::init(RenderWindow * const window)
     srand(time(NULL));
 
     //<smasson>
-    //temp
-    //enem.AdjustVisual();
-    //enem2.AdjustVisual();
-    //enem3.AdjustVisual();
-    //
+
+    //Initialisation des ennemis et du contenu lié aux ennemis
+#pragma region:Enemys&ContentInit
+    //Ennemis
+    //Ennemis Basiques
+    for (int i = 0; i < NB_BASIC_ENEMYS; ++i)
+    {
+        //Push d'un ennemi
+        basicEnemys.push_back(new BasicEnemy());
+        //Init de l'ennemi en question
+        basicEnemys.at(i)->AdjustVisual();
+    }
+    //Contenu
+    //Déclaration des variables
+    uniform_int_distribution<int> distributionEnemys(0, Enemy::EnemyType::MAX_ENEMYS - 1);
+    int lastKamikaze = 0;
+    int lastReflector = 0;
+    int lastQueen = 0;
+    int lastBoss = 0;
+    bool ok = false;
+    int res = 0;
+    for (int i = 0; i < 1000; ++i)
+    {
+        while (ok == false)
+        {
+            res = distributionEnemys(randomEngine);
+            switch (res)
+            {
+            case Enemy::EnemyType::BASIC:
+                //Les ennemis basiques sont toujours les bienvenus!
+                ok = true;
+                break;
+            case Enemy::EnemyType::KAMIKAZE:
+                //Si nous débutons ou que nous avons au moins 4 ennemis entre le dernier kamikaze et la position actuelle, alors
+                if (lastKamikaze + 5 <= i || lastKamikaze == 0)
+                {
+                    lastKamikaze = i;
+                    ok = true;
+                }
+                break;
+            case Enemy::EnemyType::REFLECTOR:
+                //Si nous débutons ou que nous avons au moins 6 ennemis entre le dernier reflector et la position actuelle, alors
+                if (lastReflector + 7 <= i || lastReflector == 0)
+                {
+                    lastReflector = i;
+                    ok = true;
+                }
+                break;
+            case Enemy::EnemyType::QUEEN:
+                //Si nous avons au moins 12 ennemis entre la dernière reine et la position actuelle, alors
+                if (lastQueen + 13 <= i)
+                {
+                    lastQueen = i;
+                    ok = true;
+                }
+                break;
+            case Enemy::EnemyType::BOSS_CANNON:
+                //Si nous avons au moins 35 ennemis entre le dernier Boss et la position actuelle, alors
+                if (lastBoss + 36 <= i)
+                {
+                    lastBoss = i;
+                    ok = true;
+                }
+                break;
+            }
+        }
+        enemysToCome.Push(res);
+        ok = false;
+    }
+#pragma endregion
 
     //Initialisation du joueur
     player->AdjustVisual();
     player->SetPosition(window->getSize().x / 2, window->getSize().y / 2);
     player->SetLimits(Vector2f(Background::LeftLimit(), 350),
-    Vector2f(Background::RightLimit(), Background::WinHeight()));
+        Vector2f(Background::RightLimit(), Background::WinHeight()));
     //</smasson>
     this->mainWin = window;
     isRunning = true;
@@ -184,9 +239,16 @@ bool GameScene::init(RenderWindow * const window)
     //<smasson>
     Bonus::SubscribeToCollisions(player);
     BasicEnemy::SubscribeToShoots(this);
-	Bombe::SubExplosion(this);
+    //Joueur collide avec projectile
+    Projectile::SubscribeToCollisions(player);
+    //Ennemis collident avec projetile (abonnement)
+    for (BasicEnemy* curEnemy : basicEnemys)
+        Projectile::SubscribeToCollisions(curEnemy);
+    Spaceship::SubscribeToHitByProjectile(this);
     //</smasson>
 #pragma endregion
+
+    //Ici, l'init est un succès, retourner true
     return true;
 }
 
@@ -224,10 +286,6 @@ void GameScene::getInputs()
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
         interfaceCommande |= 2;
-		for (size_t i = 0; i < bombs.size(); i++)
-		{
-			bombs.at(i)->Explode();
-		}
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
@@ -248,19 +306,6 @@ void GameScene::getInputs()
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
         interfaceCommande |= 16;
-		if (nbBombs > 0 && bombTimer.getElapsedTime().asMilliseconds() > bombTime.asMilliseconds())
-		{
-			bombTimer.restart();
-			for (Bombe* curBomb : bombs)
-			{
-				if (!curBomb->IsEnable())
-				{
-					curBomb->Start(player->GetDirection(), player->GetSprite()->getPosition());
-					
-				}
-			}
-			nbBombs--;
-		}
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
     {
@@ -280,7 +325,7 @@ void GameScene::getInputs()
                 //Si le projectile est inactif
                 if (!curProj->IsEnable())
                 {
-                    curProj->Start(player->GetDirection(), player->GetSprite()->getPosition());
+                    curProj->Start(player->GetDirection(), player->GetSprite()->getPosition(), *player);
                     //On break, car nous avons trouvé notre projectile
                     break;
                 }
@@ -314,40 +359,6 @@ void GameScene::update()
             }
         }
     }
-	// Bombes
-	for (size_t i = 0; i < bombs.size(); i++)
-	{
-		// Si la bombe est en jeu
-		if (bombs.at(i)->IsEnable())
-		{
-			// On l'update
-			bombs.at(i)->Update();
-		}
-		// sortie de l'écran
-		if (GlobalMath::IsOutOfScreen(bombs.at(i)->GetPosition()))
-		{
-			//Rendre la bombe inactive
-			bombs.at(i)->SetEnable(false);
-
-		}
-	}
-	// Projectiles de l'explosion de la bombe
-	for (size_t i = 0; i < nbProjExplosion; i++)
-	{
-		// Si la bombe est en jeu
-		if (explosion.at(i)->IsEnable())
-		{
-			// On l'update
-			explosion.at(i)->Update();
-		}
-		// sortie de l'écran
-		if (GlobalMath::IsOutOfScreen(explosion.at(i)->GetPosition()))
-		{
-			//Rendre la bombe inactive
-			explosion.at(i)->SetEnable(false);
-		}
-		
-	}
 #pragma endregion
     //Update des bonus
 #pragma region:BonusUpdate
@@ -365,11 +376,21 @@ void GameScene::update()
             {
                 //Rendre le bonus inactif
                 curBonus->Disable();
-                //cout << "Sortie d'un bonus de score." << endl;
             }
         }
     }
     //</smasson>
+#pragma endregion
+    //Update des ennemis
+#pragma region:EnemysUpdate
+    //Update des ennemis basiques actifs
+    for (BasicEnemy* curEnemy : basicEnemys)
+    {
+        if (curEnemy->IsEnable())
+        {
+            curEnemy->Update(player->GetSprite()->getPosition());
+        }
+    }
 #pragma endregion
     //Update du joueur
     player->Update(interfaceCommande);
@@ -412,31 +433,14 @@ void GameScene::draw()
             curBonus->Draw(*mainWin);
         }
     }
-	// Bombes
-	for (size_t i = 0; i < bombs.size(); i++)
-	{
-		// Si la bombe est en jeu
-		if (bombs.at(i)->IsEnable())
-		{
-			// On la dessine
-			bombs.at(i)->Draw(*mainWin);
-		}
-	}
-	// Projectiles de l'explosion de la bombe
-	for (size_t i = 0; i < nbProjExplosion; i++)
-	{
-		// Si le projectile est en jeu
-		if (explosion.at(i)->IsEnable())
-		{
-			// On le dessine
-			explosion.at(i)->Draw(*mainWin);
-		}
-	}
     //Dessiner les personnages
- //   enem.Draw(*mainWin);
- //   enem2.Draw(*mainWin);
- //   enem3.Draw(*mainWin);
-	//enem4.Draw(*mainWin);
+    for (BasicEnemy* curEnemy : basicEnemys)
+    {
+        if (curEnemy->IsEnable())
+        {
+            curEnemy->Draw(*mainWin);
+        }
+    }
     //Le joueur
     player->Draw(*mainWin);
     //<smasson>
@@ -453,9 +457,7 @@ void GameScene::draw()
     mainWin->display();
 }
 
-void GameScene::Notify(Subject * subject)
-{
-}
+//<smasson>
 
 void spaceShooter::GameScene::NotifyAShoot(Enemy* shooter)
 {
@@ -468,44 +470,141 @@ void spaceShooter::GameScene::NotifyAShoot(Enemy* shooter)
         {
             if (!curProj->IsEnable())
             {
-                curProj->Start(shooter->GetDir(), shooter->GetSprite()->getPosition());
+                curProj->Start(shooter->GetDir(), shooter->GetSprite()->getPosition(), *shooter);
                 break;
             }
         }
         break;
-	case Projectile::ProjectileType::BOMB:
-		// On ajoute une bombe
-		for (Bombe* curBomb : bombs)
-		{
-			if (!curBomb->IsEnable())
-			{
-				curBomb->Start(shooter->GetDir(), shooter->GetSprite()->getPosition());
-			}
-		}
     }
 }
-void spaceShooter::GameScene::NotifyAnExplosion(Bombe* bombe)
+
+void spaceShooter::GameScene::NotifyHited(Spaceship * victim)
 {
-	int projCount = 0;
-	//On ajoute les projectiles de L'EXPLOOOSION!
-	for (size_t i = 0; i < explosion.size(); i++)
-	{
-		int rdn = rand() % 2 + 1;
-		if (!explosion.at(i)->IsEnable())
-		{
-			explosion.at(i)->SetRotation(360 / nbProjExplosion * i);
-			if (projCount % 2 == 0)
-			{
-				explosion.at(i)->Start(Vector2f(cosf(360 / nbProjExplosion * i * 2), sinf(360 / nbProjExplosion * i * 2)), bombe->GetPosition());
-			}
-			projCount++;
-		}
-		if (projCount == nbProjWhenExpl)
-		{
-			break;
-		}
-	}
 }
+
+bool spaceShooter::GameScene::CanSpawnEnemys()
+{
+    return clockEnemys.getElapsedTime().asSeconds() >= timerEnemys.asSeconds();
+}
+
+void spaceShooter::GameScene::SpawnEnemy(int type)
+{
+    switch (type)
+    {
+    case Enemy::EnemyType::BASIC:
+        cout << "Basic spawn!" << endl;
+        //Trouver un ennemi disable
+        for (BasicEnemy* curEnem : basicEnemys)
+        {
+            if (!curEnem->IsEnable())
+            {
+                //Random
+                uniform_int_distribution<int> distribution(Background::LeftLimit() + curEnem->GetSprite()->getGlobalBounds().width / 2, Background::RightLimit() - curEnem->GetSprite()->getGlobalBounds().width / 2);
+                //Start à une position aléatoire
+                curEnem->Start(Vector2f(distribution(randomEngine), -50), randomEngine);
+                //Nous l'avons trouvé, break
+                break;
+            }
+        }
+        break;
+    case Enemy::EnemyType::KAMIKAZE:
+        cout << "Kamikaze spawn!" << endl;
+        break;
+    case Enemy::EnemyType::REFLECTOR:
+        cout << "Reflector spawn!" << endl;
+        break;
+    case Enemy::EnemyType::QUEEN:
+        cout << "Queen spawn!" << endl;
+        break;
+    case Enemy::EnemyType::BOSS_CANNON:
+        cout << "Boss spawn!" << endl;
+        break;
+    }
+}
+
+void spaceShooter::GameScene::ResetEnemysTimer()
+{
+    uniform_real_distribution<float> distribution(MIN_ENEMYS_SPAWN, MAX_ENEMYS_SPAWN);
+    timerEnemys = seconds(distribution(randomEngine));
+}
+
+int spaceShooter::GameScene::GetScoreFromKill(Enemy::EnemyType victimType)
+{
+    switch (victimType)
+    {
+    case Enemy::EnemyType::BASIC:
+        return 100;
+        break;
+    case Enemy::EnemyType::KAMIKAZE:
+        return 150;
+        break;
+    case Enemy::EnemyType::REFLECTOR:
+        return 250;
+        break;
+    case Enemy::EnemyType::QUEEN:
+        return 500;
+        break;
+    case Enemy::EnemyType::BOSS_CANNON:
+        return 1000;
+        break;
+    }
+}
+
+void spaceShooter::GameScene::SpawnBonus(Bonus::BonusType type, Vector2f pos)
+{
+    //Faire spawner un bonus selon le type
+    switch (type)
+    {
+    case Bonus::BonusType::ScoreBonus_Type:
+        //Spawn d'un bonus de type score
+        for (Bonus* curBonus : scoresBonus)
+        {
+            if (curBonus->IsEnable())
+            {
+                curBonus->Start(pos);
+                curBonus->Disable();
+            }
+        }
+        break;
+    }
+}
+
+void spaceShooter::GameScene::SpawnBonusFromEnemyType(Enemy::EnemyType type, Vector2f pos)
+{
+    //D'abord, si nous ne sommes pas de type boss
+    if (type != Enemy::EnemyType::BOSS_CANNON)
+    {
+
+    }
+    //Sinon, nous sommes de type boss, alors
+    else
+    {
+        //Spawn d'un bonus aléatoire, car c'est un boss
+        uniform_int_distribution<int> bonusRand(0, Bonus::BonusType::BonusType_MAX-1);
+
+        //Selon le type de bonus, spawner
+        switch (bonusRand(randomEngine))
+        {
+        case Bonus::BonusType::ScoreBonus_Type:
+            //Spawn d'un bonus de score
+            break;
+        }
+    }
+    switch (type)
+    {
+    case Enemy::EnemyType::BASIC:
+        break;
+    case Enemy::EnemyType::KAMIKAZE:
+        break;
+    case Enemy::EnemyType::REFLECTOR:
+        break;
+    case Enemy::EnemyType::QUEEN:
+        break;
+    case Enemy::EnemyType::BOSS_CANNON:
+        break;
+    }
+}
+
 void spaceShooter::GameScene::UpdateHUD()
 {
     //<smasson>
@@ -538,3 +637,4 @@ void spaceShooter::GameScene::UpdateHUD()
     nextEnemyLabel.setString("Next Enemy: \n" + std::to_string(default));
     //</smasson>
 }
+//</smasson>

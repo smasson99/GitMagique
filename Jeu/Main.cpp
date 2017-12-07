@@ -5,4 +5,5 @@ int main()
 {
 	spaceShooter::Game game;
 	return game.run();
+	//system("pause");
 }

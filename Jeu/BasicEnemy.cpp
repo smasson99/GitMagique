@@ -20,8 +20,8 @@ BasicEnemy::BasicEnemy() : Enemy::Enemy()
     //</smasson>
     sprite->setScale(0.35f, 0.35f);
 	speed = 3;
+	SetColor(Color::Green);
 	sprite->setRotation(180);
-	//SetColor(Color::Green);
 
 	if ((rand() % 2 + 1) == 2)
 	{
@@ -86,7 +86,7 @@ bool BasicEnemy::Init(char path[])
 }
 void BasicEnemy::AdjustVisual()
 {
-	sprite->setTexture(texture);
-	sprite->setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
+    sprite->setTexture(texture);
+    sprite->setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
 }
 //</smasson
