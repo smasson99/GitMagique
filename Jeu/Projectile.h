@@ -2,13 +2,15 @@
 #include <SFML\Graphics.hpp>
 #include "StaticSubject.h"
 #include "Spaceship.h"
+#include <vector>
 
 using namespace sf;
 using namespace spaceShooter;
+using namespace std;
 
 namespace spaceShooter
 {
-    class Projectile :public StaticSubject
+    class Projectile
     {
     public:
         Projectile(const float x, const float y, const Color color, const float speed, Spaceship* owner);
@@ -19,11 +21,9 @@ namespace spaceShooter
             LAZER_PROJ,
             BULLET,
             BASIC,
-            ETOILE,
-			BOMB,
-			BOMB_PROJ
+            ETOILE
         };
-        void Start(const Vector2f dir, Vector2f position);
+        void Start(const Vector2f dir, Vector2f position, Spaceship& owner);
         void SetTexture(const Texture& texture);
         virtual void Draw(RenderWindow& mainWin);
         void SetOwner(Spaceship& newOwner);
@@ -33,13 +33,17 @@ namespace spaceShooter
         bool IsEnable();
         void SetEnable(bool enable);
         Vector2f GetPosition();
-		void SetRotation(float angle);
+		static void SubscribeToCollisions(Spaceship* subscriber);
+		static void CleanUp();
+        int GetDamage() const;
     private:
         Spaceship* owner;
+		static vector<Spaceship*> observersCollisions;
 	protected:
         Shape* shape;
         float speed;
         Vector2f dir;
         bool isEnable;
+        int damage;
     };
 }

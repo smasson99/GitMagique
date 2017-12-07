@@ -4,34 +4,36 @@
 
 namespace spaceShooter
 {
-	//////////////////////////////////////////////
-	// Class Bombe
-	//////////////////////////////////////////////
-	class GameScene;
 	class Bombe : public Projectile
 	{
 	public:
-
+		struct BombProj : public Projectile
+		{
+		public:
+			BombProj(const float x, const float y, const Color color, const float speed, Spaceship* owner) : Projectile::Projectile(x, y, color, speed, owner)
+			{
+				// On met le bon sprite
+				
+			}
+			void Update(float x, float y)
+			{
+				Projectile::Update();
+				if (false) // Si le  projectile est trop éloigné du centre d'explosion (x, y en param comparé a explosionRadius)...
+				{
+					isEnable = false; // Il disparait
+				}
+			}
+		private:
+			
+		};
 		Bombe(const float x, const float y, const Color color, const float speed, Spaceship* owner);
-		//void Update();
-		//float GetRadius();
-		Vector2f Bombe::GetPosition();
-		void Explode();
-		static void SubExplosion(GameScene *scene);
-	private:
-
-	};
-
-	//////////////////////////////////////////////
-	// Class BombProj
-	//////////////////////////////////////////////
-
-	class BombProj : public Projectile
-	{
-	public:
-		BombProj(const float radius, const float x, const float y, const Color color, const float speed, Spaceship* owner);
 		void Update();
+		void Draw(RenderWindow &win);
+		float GetRadius();
+		void Explode();
 	private:
-		float radius;
+		float explosionRadius;
+		bool exploding;
+		vector<BombProj> explosion;
 	};
 }
