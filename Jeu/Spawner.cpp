@@ -1,6 +1,5 @@
 #include "Spawner.h"
 #include "BasicEnemy.h"
-#include "Kamikaze.h"
 using namespace spaceShooter;
 static float posX;
 static float posY;
@@ -13,8 +12,7 @@ Enemy Spawner::SpawnMob(Enemies type)
 	}
 	else if (type == Enemies::KAMIKAZE)
 	{
-		Kamikaze retVal;
-		retVal.SetPosition(posX, posY);
+
 	}
 	else if (type == Enemies::REFLECTOR)
 	{
