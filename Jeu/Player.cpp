@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "GlobalMath.h"
 #include "WeaponGenerator.h"
+#include "GameScene.h"
 
 using namespace spaceShooter;
 
@@ -13,10 +14,8 @@ Player::Player() :Spaceship()
     //Ajout de l'arme basique du joueur
     weapons.push_back(WeaponGenerator::GetWeapon(Weapon::WeaponType::BASIC_WEAPON));
     curWepIndex = 0;
-    //Autres variables
     curScorMult = 1;
     score = 0;
-    this->isPlayer = true;
     this->maxHealth = 40;
     this->curHealth = maxHealth;
 }
@@ -37,24 +36,24 @@ Player * Player::GetInstance()
     return instance;
 }
 
-void spaceShooter::Player::KillInstance()
+void Player::KillInstance()
 {
     delete instance;
     instance = nullptr;
 }
 
-void spaceShooter::Player::SetLimits(const Vector2f point1, const Vector2f point2)
+void Player::SetLimits(const Vector2f point1, const Vector2f point2)
 {
-    limitMin = Vector2f(point1.x + sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point1.y - sprite->getTexture()->getSize().y / 16 /*/ (2 * (sprite->getScale().y))*/);
+    limitMin = Vector2f(point1.x + sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point1.y - sprite->getTexture()->getSize().y/16 /*/ (2 * (sprite->getScale().y))*/);
     limitMax = Vector2f(point2.x - sprite->getTexture()->getSize().x / (2 / (sprite->getScale().x)), point2.y - sprite->getTexture()->getSize().y / (14 * (sprite->getScale().y)));
 }
 
-void spaceShooter::Player::Notify(Subject * subject)
+void Player::Notify(Subject * subject)
 {
 
 }
 
-bool spaceShooter::Player::Update(int commands)
+bool Player::Update(int commands)
 {
     Vector2f dir(0, 0);
 
@@ -86,7 +85,7 @@ bool spaceShooter::Player::Update(int commands)
 
     if (commands == 16)
     {
-        //espace, pour les bombes
+        // On demande au jeu de tirer une bombe.
     }
     if (commands == 32)
     {
