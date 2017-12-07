@@ -37,6 +37,8 @@ namespace spaceShooter
         void SpawnEnemy(int type);
         void ResetEnemysTimer();
         int GetScoreFromKill(Enemy::EnemyType victimType);
+        void SpawnBonus(Bonus::BonusType type, Vector2f pos);
+        void SpawnBonusFromEnemyType(Enemy::EnemyType type, Vector2f pos);
         //</smasson>
 	private:
 

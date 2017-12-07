@@ -17,6 +17,8 @@ Player::Player() :Spaceship()
     curScorMult = 1;
     score = 0;
     this->isPlayer = true;
+    this->maxHealth = 40;
+    this->curHealth = maxHealth;
 }
 
 Player::~Player()
@@ -91,7 +93,7 @@ bool spaceShooter::Player::Update(int commands)
         //q, pour les changements d'armes
     }
 
-    return curHealth > 0;
+    return curHealth >= 0;
 }
 
 bool spaceShooter::Player::CanShoot()
