@@ -31,6 +31,7 @@ namespace spaceShooter
         int curWepIndex;
         int curScorMult;
         int score;
+		int nbBombs;
         //temp
         vector<Weapon*> weapons;
         //

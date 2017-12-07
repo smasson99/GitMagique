@@ -7,7 +7,7 @@ vector<GameScene*> Enemy::scenes;
 Enemy::Enemy() : Spaceship::Spaceship()
 {
 	isSlave = false;
-	type = EnemyType::BASIC;
+	type = Enemies::BASIC;
 }
 
 bool Enemy::Update(Vector2f target)
@@ -16,7 +16,7 @@ bool Enemy::Update(Vector2f target)
 	{
 		Move(0, 1);
 	}
-	return curHealth >= 0;
+	return curHealth > 0;
 }
 
 void Enemy::SetColor(Color color)
@@ -52,10 +52,6 @@ void spaceShooter::Enemy::SubscribeToShoots(GameScene* scene)
 Vector2f spaceShooter::Enemy::GetDir()
 {
     return Vector2f(0, 1);
-}
-Enemy::EnemyType Enemy::GetType() const
-{
-    return type;
 }
 //</smasson>
 

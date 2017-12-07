@@ -10,7 +10,7 @@ namespace spaceShooter
         ~BasicEnemy();
 		bool Update(Vector2f target);
         static bool Init(char path[]);
-        void AdjustVisual();
+		void AdjustVisual();
 	private:
 		bool goingRight;
         static Texture texture;

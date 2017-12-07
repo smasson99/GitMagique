@@ -12,6 +12,14 @@ namespace spaceShooter
     //foward declaration
     class GameScene;
 
+	enum Enemies
+	{
+		BASIC,
+		KAMIKAZE,
+		QUEEN,
+		REFLECTOR,
+		BOSS_CANNON
+	};
 	class Enemy : public Spaceship
 	{
 	public:
@@ -24,23 +32,14 @@ namespace spaceShooter
         Projectile::ProjectileType GetProjectileType();
         static void SubscribeToShoots(GameScene* scene);
         Vector2f GetDir();
-        static enum EnemyType
-        {
-            BASIC,
-            KAMIKAZE,
-            QUEEN,
-            REFLECTOR,
-            BOSS_CANNON,
-            MAX_ENEMYS
-        };
-        EnemyType GetType() const;
+
         //</smasson>
 	protected:
 		Time lastFire;
 		Time cadency;
 		Clock fireClock;
 		bool isSlave;
-		EnemyType type;
+		Enemies type;
 		Color color;
 		int idlePosition = (rand() % 10 + 1) * 10 + 30;
         //temp

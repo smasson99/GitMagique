@@ -1,58 +1,58 @@
 #include "Bombe.h"
+#include "GameScene.h"
 using namespace spaceShooter;
+
+//////////////////////////////////////////////
+// Class Bombe
+//////////////////////////////////////////////
+
+static vector<GameScene*> explObservers;
 
 Bombe::Bombe(const float x, const float y, const Color color, const float speed, Spaceship* owner) : Projectile(x, y, color, speed, owner)
 {
 	// On ajoute un sprite propre à la bombe
 
 }
-void Bombe::Update()
-{
-	// Avec explosion
-	if (exploding)
-	{
-		
-		for (size_t i = 0; i < explosion.size(); i++)
-		{
-			explosion.at(i).Update(shape->getPosition().x, shape->getPosition().y);
-		}
-	}
-	// Sans explosion
-	else
-	{
-		Projectile::Update();
-	}
-}
-float Bombe::GetRadius()
-{
-	return explosionRadius;
-}
+//void Bombe::Update()
+//{
+//	Projectile::Update();
+//}
+//float Bombe::GetRadius()
+//{
+//	return explosionRadius;
+//}
 
 void Bombe::Explode()
 {
-	// On charge l'explosion de projectiles qui partent dans tous les sens.
-	// on peux ajouter des projectiles dans "explosion" et les get dans game scene
-	// ou dans les projectiles de game scene pour faciliter les collisions.
-	for (size_t i = 0; i < 50; i++)
+	for (size_t i = 0; i < explObservers.size(); i++)
 	{
-		// TODO
+		explObservers.at(i)->NotifyAnExplosion(this);
+		isEnable = false;
 	}
-	exploding = true;
 }
-
-void Bombe::Draw(RenderWindow &win)
+Vector2f Bombe::GetPosition() { return shape->getPosition(); }
+void Bombe::SubExplosion(GameScene *scene)
 {
-	// Pas d'explosion
-	if (!exploding)
+	explObservers.push_back(scene);
+}
+//////////////////////////////////////////////
+// Class BombProj
+//////////////////////////////////////////////
+
+BombProj::BombProj(const float radius, const float x, const float y, const Color color, const float speed, Spaceship* owner) : Projectile(x, y, color, speed, owner)
+{
+	// On met le bon sprite
+	this->radius = radius;
+}
+void BombProj::Update()
+{
+	Projectile::Update();
+	static float originalX = GetPosition().x;
+	static float originalY = GetPosition().y;
+	// Si le  projectile est trop éloigné du centre d'explosion
+	if (GetPosition().x > originalX + radius || GetPosition().x < originalX - radius ||
+		GetPosition().y > originalY + radius || GetPosition().y < originalY - radius)
 	{
-		Projectile::Draw(win);
-	}
-	// Avec explosion
-	else
-	{
-		for (size_t i = 0; i < explosion.size(); i++)
-		{
-			explosion.at(i).Draw(win);
-		}
+		isEnable = false;
 	}
 }

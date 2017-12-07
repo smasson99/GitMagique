@@ -1,7 +1,5 @@
 #include "Projectile.h"
 
-vector<Spaceship*> Projectile::observersCollisions;
-
 spaceShooter::Projectile::Projectile(const float x, const float y, const Color color, const float speed, Spaceship * owner) :speed(speed), owner(owner)
 {
     shape = new RectangleShape();
@@ -12,7 +10,6 @@ spaceShooter::Projectile::Projectile(const float x, const float y, const Color c
     curShape = nullptr;
     delete curShape;
     isEnable = false;
-    this->damage = owner->GetCurDamage();
 }
 
 spaceShooter::Projectile::~Projectile()
@@ -23,12 +20,10 @@ spaceShooter::Projectile::~Projectile()
     shape = nullptr;
 }
 
-void spaceShooter::Projectile::Start(const Vector2f dir, Vector2f position, Spaceship& owner)
+void spaceShooter::Projectile::Start(const Vector2f dir, Vector2f position)
 {
     this->dir = dir;
     shape->setPosition(position);
-    this->owner = &owner;
-    this->damage = owner.GetCurDamage();
     isEnable = true;
 }
 
@@ -45,7 +40,6 @@ void spaceShooter::Projectile::Draw(RenderWindow & mainWin)
 void spaceShooter::Projectile::SetOwner(Spaceship & newOwner)
 {
     this->owner = &newOwner;
-    this->damage = newOwner.GetCurDamage();
 }
 
 Color spaceShooter::Projectile::GetColor()
@@ -63,15 +57,7 @@ void spaceShooter::Projectile::Update()
     //Avancer le projectile dans la direction à sa vitesse
     shape->move(dir.x*speed, dir.y*speed);
     //Vérifier les collisions
-    //Pour chaque observateur
-	for (Spaceship* curObserver : observersCollisions)
-	{
-		if (shape->getGlobalBounds().intersects(curObserver->GetSprite()->getGlobalBounds()))
-		{
-			//Avertir l'observateur
-            curObserver->NotifyProjectileCollision(this);
-		}
-	}
+    //
 }
 
 bool spaceShooter::Projectile::IsEnable()
@@ -88,24 +74,7 @@ Vector2f spaceShooter::Projectile::GetPosition()
 {
     return shape->getPosition();
 }
-
-void spaceShooter::Projectile::SubscribeToCollisions(Spaceship * subscriber)
+void spaceShooter::Projectile::SetRotation(float angle)
 {
-	//Ajouter un abonné pour les collisions
-	observersCollisions.push_back(subscriber);
-}
-
-void spaceShooter::Projectile::CleanUp()
-{
-	//Clean-Up!
-	for (Spaceship* curObserver : observersCollisions)
-	{
-		curObserver = nullptr;
-	}
-	observersCollisions.clear();
-}
-
-int spaceShooter::Projectile::GetDamage() const
-{
-    return this->damage;
+	shape->setRotation(angle);
 }
