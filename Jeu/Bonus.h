@@ -13,8 +13,7 @@ namespace spaceShooter
         //Enum
         static enum BonusType
         {
-            ScoreBonus_Type,
-            BonusType_MAX
+            ScoreBonus_Type
         };
         //Constructeur
         Bonus(const float radius, const Color color, const float bonusMagnitude, const float bonusDuration, const Vector2f pos);

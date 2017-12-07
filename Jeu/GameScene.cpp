@@ -173,7 +173,7 @@ bool GameScene::init(RenderWindow * const window)
 
     //Initialisation du joueur
     player->AdjustVisual();
-    player->Start(Vector2f(window->getSize().x / 2, window->getSize().y - player->GetSprite()->getGlobalBounds().height/2), randomEngine);
+    player->SetPosition(window->getSize().x / 2, window->getSize().y / 2);
     player->SetLimits(Vector2f(Background::LeftLimit(), 350),
     Vector2f(Background::RightLimit(), Background::WinHeight()));
     //</smasson>
@@ -377,23 +377,11 @@ void GameScene::update()
     //Updater le HUD
     UpdateHUD();
 
-    //Ajouts potentiels
-#pragma region:AddEnemys
-    //Si nous pouvons ajouter un ennemi
-    if (CanSpawnEnemys())
-    {
-        //Pour le debug
-        //cout << "Je spawn un ennemi..." << endl;
-        //On ajoute le premier ennemi
-        SpawnEnemy(enemysToCome.Front());
-        //On enlève le premier ennemi de la liste
-        enemysToCome.Pop();
-        //Reset de l'horloge
-        clockEnemys.restart();
-        //Reset du timer
-        ResetEnemysTimer();
-    }
-#pragma endregion
+ //   enem.Update(Vector2f(player->GetSprite()->getPosition()));
+ //   enem2.Update(Vector2f(player->GetSprite()->getPosition()));
+ //   enem3.Update(Vector2f(player->GetSprite()->getPosition()));
+	//enem4.Update(Vector2f(player->GetSprite()->getPosition()));
+	//bomb->Update();
 }
 
 void GameScene::draw()
@@ -517,89 +505,7 @@ void spaceShooter::GameScene::NotifyAnExplosion(Bombe* bombe)
 			break;
 		}
 	}
-
-    if (victim->IsPlayer())
-    {
-        cout << "Player hiten!" << endl;
-    }
-    else
-    {
-        cout << "Enemy hiten!" << endl;
-    }
-    //Si la victime est morte, appeler la méthode DIE
-    if (victim->IsDead())
-    {
-        //Appel de DIE
-        victim->Die();
-        //Si la victime n'est pas le joueur
-        if (!victim->IsPlayer())
-        {
-            //Conversion temporaire
-            Enemy* temp = (Enemy*)victim;
-            //Ajout de score
-            player->AddScore(GetScoreFromKill(temp->GetType()));
-            SpawnBonusFromEnemyType(temp->GetType(), victim->GetSprite()->getPosition());
-            //Delete
-            temp = nullptr;
-            delete temp;
-        }
-    }
 }
-void spaceShooter::GameScene::SpawnBonus(Bonus::BonusType type, Vector2f pos)
-{
-    //Faire spawner un bonus selon le type
-    switch (type)
-    {
-    case Bonus::BonusType::ScoreBonus_Type:
-        //Spawn d'un bonus de type score
-        for (Bonus* curBonus : scoresBonus)
-        {
-            if (curBonus->IsEnable())
-            {
-                curBonus->Start(pos);
-                curBonus->Disable();
-            }
-        }
-        break;
-    }
-}
-
-void spaceShooter::GameScene::SpawnBonusFromEnemyType(Enemy::EnemyType type, Vector2f pos)
-{
-    //D'abord, si nous ne sommes pas de type boss
-    if (type != Enemy::EnemyType::BOSS_CANNON)
-    {
-
-    }
-    //Sinon, nous sommes de type boss, alors
-    else
-    {
-        //Spawn d'un bonus aléatoire, car c'est un boss
-        uniform_int_distribution<int> bonusRand(0, Bonus::BonusType::BonusType_MAX-1);
-
-        //Selon le type de bonus, spawner
-        switch (bonusRand(randomEngine))
-        {
-        case Bonus::BonusType::ScoreBonus_Type:
-            //Spawn d'un bonus de score
-            break;
-        }
-    }
-    switch (type)
-    {
-    case Enemy::EnemyType::BASIC:
-        break;
-    case Enemy::EnemyType::KAMIKAZE:
-        break;
-    case Enemy::EnemyType::REFLECTOR:
-        break;
-    case Enemy::EnemyType::QUEEN:
-        break;
-    case Enemy::EnemyType::BOSS_CANNON:
-        break;
-    }
-}
-
 void spaceShooter::GameScene::UpdateHUD()
 {
     //<smasson>
@@ -609,7 +515,7 @@ void spaceShooter::GameScene::UpdateHUD()
     currentScoreLabel.setString("Score: \n" + std::to_string(player->GetScore()));
     //Le nombre de points de vie restants
     int playerHealthPoints;
-    lifesLabel.setString("Health Points: \n" + std::to_string(player->GetCurrentHealth()));
+    lifesLabel.setString("Health Points: \n" + std::to_string(default));
     shieldLabel.setString("Shield Lifes: \n" + std::to_string(default));
     //L'arme courante du joueur
     string curWepName = "";

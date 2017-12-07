@@ -27,14 +27,6 @@ namespace spaceShooter
         void Notify(Subject* subject);
         void NotifyAShoot(Enemy* shooter);
 		void NotifyAnExplosion(Bombe* bomb);
-        void NotifyHited(Spaceship* victim);
-        bool CanSpawnEnemys();
-        void SpawnEnemy(int type);
-        void ResetEnemysTimer();
-        int GetScoreFromKill(Enemy::EnemyType victimType);
-        void SpawnBonus(Bonus::BonusType type, Vector2f pos);
-        void SpawnBonusFromEnemyType(Enemy::EnemyType type, Vector2f pos);
-        //</smasson>
 	private:
 
         //<smasson>

@@ -16,8 +16,6 @@ Player::Player() :Spaceship()
     curWepIndex = 0;
     curScorMult = 1;
     score = 0;
-    this->maxHealth = 40;
-    this->curHealth = maxHealth;
 }
 
 Player::~Player()
@@ -92,7 +90,7 @@ bool Player::Update(int commands)
         //q, pour les changements d'armes
     }
 
-    return curHealth >= 0;
+    return curHealth > 0;
 }
 
 bool spaceShooter::Player::CanShoot()
@@ -146,5 +144,5 @@ void spaceShooter::Player::AdjustVisual()
 {
     sprite->setTexture(texture);
     sprite->setScale(0.4f, 0.4f);
-    sprite->setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
+    sprite->setOrigin(texture.getSize().x/2, texture.getSize().y/2);
 }
